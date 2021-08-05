@@ -53,7 +53,8 @@ def show_email_validate_output(email_address):
     put_text(output)
 
 def app():
-    put_text("DISCLAIMER. \n\nA third party API is being utilised and hence we can not provide 100% certainty on email validation technique used.\nAll information is stored securely.")
+    put_html(r"""<h1 align="center"><strong>📝 Email Verifier</strong></h1>""")
+    put_text("\n\n\n\nDISCLAIMER. \n\nA third party API is being utilised and hence we can not provide 100% certainty on the email validation technique used.\nAll information is stored securely.")
     while output:
         email_address = input("What is the email address you would like to check?", required=True)
         show_email_validate_output(email_address)
