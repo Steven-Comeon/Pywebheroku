@@ -12,19 +12,22 @@ def validate_email_addresses(email):
     import requests
 
     email_address = email
-    response = requests.get(
-        "https://isitarealemail.com/api/email/validate",
-        params={'email': email_address})
+    try:
+        response = requests.get(
+            "https://isitarealemail.com/api/email/validate",
+            params={'email': email_address}, timeout=5)
 
-    status = response.json()['status']
-    if status == "valid":
-        print("email is valid")
-        output = True
-    elif status == "invalid":
+        status = response.json()['status']
+        if status == "valid":
+            print("email is valid")
+            output = True
+        elif status == "invalid":
+            output = False
+        else:
+            print("email was unknown")
+            output = False
+    except:
         output = False
-    else:
-        print("email was unknown")
-
     output = "Email address {} is shown to be {}".format(email,output)
     print(email, output)
     return output
@@ -40,16 +43,17 @@ def btn_click(btn_val):
 @use_scope('time', clear=True)
 def show_email_validate_output(email_address):
     put_text('Checking email address...')
+    output = validate_email_addresses(email_address)
     put_processbar('bar')
-    for i in range(1, 4):
-        set_processbar('bar', i / 3)
+    for i in range(1, 6):
+        set_processbar('bar', i / 5)
         time.sleep(0.1)
     put_text("\n\n")
 
-    put_text(validate_email_addresses(email_address))
+    put_text(output)
 
 def app():
-    put_text("DISCLAIMER. \nA third party API is being utilised and hence we can not provide 100% certainty on the validate of such email validation techniques.")
+    put_text("DISCLAIMER. \n\nA third party API is being utilised and hence we can not provide 100% certainty on email validation technique used.\nAll information is stored securely.")
     while output:
         email_address = input("What is the email address you would like to check?", required=True)
         show_email_validate_output(email_address)
