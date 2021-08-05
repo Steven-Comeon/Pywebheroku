@@ -5,52 +5,55 @@ from pywebio.input import *
 from pywebio.output import *
 import argparse
 from pywebio import start_server
-
-import pickle
-import numpy as np
-model = pickle.load(open('regression_rf.pkl', 'rb'))
-app = Flask(__name__)
+import time
 
 
-def predict():
-    Year = input("Enter the Model Year：", type=NUMBER)
-    Year = 2021 - Year
-    Present_Price = input("Enter the Present Price(in LAKHS)", type=FLOAT)
-    Kms_Driven = input("Enter the distance it has travelled(in KMS)：", type=FLOAT)
-    Kms_Driven2 = np.log(Kms_Driven)
-    Owner = input("Enter the number of owners who have previously owned it(0 or 1 or 2 or 3)", type=NUMBER)
-    Fuel_Type = select('What is the Fuel Type', ['Petrol', 'Diesel','CNG'])
-    if (Fuel_Type == 'Petrol'):
-        Fuel_Type = 239
+def validate_email_addresses(email):
+    import requests
 
-    elif (Fuel_Type == 'Diesel'):
-        Fuel_Type = 60
+    email_address = email
+    response = requests.get(
+        "https://isitarealemail.com/api/email/validate",
+        params={'email': email_address})
 
+    status = response.json()['status']
+    if status == "valid":
+        print("email is valid")
+        output = True
+    elif status == "invalid":
+        output = False
     else:
-        Fuel_Type = 2
-    Seller_Type = select('Are you a dealer or an individual', ['Dealer', 'Individual'])
-    if (Seller_Type == 'Individual'):
-        Seller_Type = 106
+        print("email was unknown")
 
+    output = "Email address {} is shown to be {}".format(email,output)
+    print(email, output)
+    return output
+
+def btn_click(btn_val):
+    if btn_val == 'New Email':
+        output = True
     else:
-        Seller_Type = 195
-    Transmission = select('Transmission Type', ['Manual Car', 'Automatic Car'])
-    if (Transmission == 'Manual Car'):
-        Transmission = 261
-    else:
-        Transmission = 40
+        output = False
+    return output
 
-    prediction = model.predict([[Present_Price, Kms_Driven2, Fuel_Type, Seller_Type, Transmission, Owner, Year]])
-    output = round(prediction[0], 2)
 
-    if output < 0:
-        put_text("Sorry You can't sell this Car")
+@use_scope('time', clear=True)
+def show_email_validate_output(email_address):
+    put_text('Checking email address...')
+    put_processbar('bar')
+    for i in range(1, 4):
+        set_processbar('bar', i / 3)
+        time.sleep(0.1)
+    put_text("\n\n")
 
-    else:
-        put_text('You can sell this Car at price:',output)
+    put_text(validate_email_addresses(email_address))
 
-app.add_url_rule('/tool', 'webio_view', webio_view(predict),
-            methods=['GET', 'POST', 'OPTIONS'])
+def app():
+    put_text("DISCLAIMER. \nA third party API is being utilised and hence we can not provide 100% certainty on the validate of such email validation techniques.")
+    while output:
+        email_address = input("What is the email address you would like to check?", required=True)
+        show_email_validate_output(email_address)
+
 
 
 if __name__ == '__main__':
@@ -58,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--port", type=int, default=8080)
     args = parser.parse_args()
 
-    start_server(predict, port=args.port)
+    start_server(app, port=args.port)
 #if __name__ == '__main__':
     #predict()
 
